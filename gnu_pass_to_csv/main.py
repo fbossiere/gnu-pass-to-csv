@@ -99,6 +99,12 @@ class PasswordExporter:
 
         # Create a DataFrame and export to CSV
         df = pd.DataFrame(filtered_results)
+        # Assuming `self.output_csv` is the path to your CSV file
+        output_folder = os.path.dirname(self.output_csv)
+
+        # Check if the directory exists, if not, create it
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
         df.to_csv(self.output_csv, index=False, quoting=QUOTE_NONNUMERIC)
 
         typer.echo(f"Passwords exported successfully to {self.output_csv}")
