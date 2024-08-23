@@ -1,19 +1,19 @@
-# GNU GPG Password Dumper
+# GNU GPG Password Exporter
 
-A Python tool to decrypt and export your GPG-encrypted passwords stored in a pass-compatible directory to a CSV file. This tool is ideal for users who manage their passwords using `pass` and need to export them for backup or migration purposes.
+A Python tool to decrypt and export your GPG-encrypted passwords stored in a pass-compatible directory to a CSV file. This tool is ideal for users who manage their passwords using `pass` and need to export them for backup, migration, or integration purposes.
 
 ## Features
 
-- **Decrypt GPG-encrypted passwords:** Automatically decrypts `.gpg` files in your password store directory.
-- **Parallel processing:** Utilizes concurrent processing to speed up the decryption and export process.
-- **Customizable output:** Exports password details to a customizable CSV file.
-- **Environment variable support:** Load environment variables from a `.env` file.
+- **Automatic GPG Decryption:** Seamlessly decrypts `.gpg` files in your password store directory.
+- **Parallel Processing:** Leverages concurrent processing to accelerate the decryption and export operations.
+- **Customizable Output:** Easily export password data to a CSV file with a customizable structure.
+- **Environment Variable Support:** Supports loading configurations from a .env file, including GPG passphrase and directory paths.
 
 ## Requirements
 
-- Python 3.12
-- GnuPG (GPG) installed and configured on your system
-- `Poetry` for dependency management
+- **Python 3.12** or higher
+- **GnuPG (GPG):** Ensure GPG is installed and properly configured on your system.
+- **Poetry:** For dependency management and virtual environment setup.
 
 ## Installation
 
@@ -26,17 +26,17 @@ A Python tool to decrypt and export your GPG-encrypted passwords stored in a pas
 
 2. **Install dependencies with Poetry:**
 
-   Ensure you have Poetry installed. If not, install it following the [official guide](https://python-poetry.org/docs/#installation).
+   Make sure Poetry is installed. If not, install it using the [Poetry Installation Guide](https://python-poetry.org/docs/#installation).
 
    ```bash
    poetry install
    ```
 
-   This command will create a virtual environment and install all necessary dependencies.
+   This command sets up a virtual environment and installs all required dependencies.
 
-## CSV File Format
+## CSV File Structure
 
-The exported CSV file will contain the following fields:
+The tool exports your passwords to a CSV file with the following structure:
 
 ```json
 {
@@ -53,41 +53,59 @@ The exported CSV file will contain the following fields:
 
 ### Field Descriptions
 
-- **name**: The relative path to the password file from the base password store directory.
-- **url**: The URL associated with the password. (Currently left empty by default)
-- **email**: The email address associated with the password. (Currently left empty by default)
-- **username**: The username associated with the password. (Currently left empty by default)
-- **password**: The first line of the decrypted file, which is typically the password itself.
-- **note**: Any additional lines from the decrypted file are concatenated and stored in this field.
-- **totp**: Field for storing Time-based One-Time Passwords (TOTP). (Currently left empty by default)
-- **vault**: The vault to which the password belongs. The default value is "Personal".
+- **name**: Relative path to the password file from the base password store directory.
+- **url**: URL associated with the password (if available)
+- **email**: Email address associated with the password (if available)
+- **username**: Username associated with the password (if available)
+- **password**: The first line of the decrypted file, typically the password.
+- **note**: Additional lines from the decrypted file concatenated into a single string.
+- **totp**: Field for storing Time-based One-Time Passwords (TOTP) (if available)
+- **vault**: The vault category to which the password belongs (default is "Personal").
 
 ## Usage
 
-After installing the necessary dependencies, you can run the script to decrypt your GPG-encrypted passwords and export them to a CSV file.
+After installing the dependencies, you can use the tool to decrypt your GPG-encrypted passwords and export them to a CSV file.
 
-### Option 1: Using Poetry
+### Option 1: Running with Poetry
 
-You can run the script directly using Poetry's run command:
-
-```bash
-poetry run password-exporter convert --passphrase "mypassphrase"
-```
-
-### Option 2: Using the Installed Script
-
-If you prefer to use the installed script directly, you can run:
+Execute the script using Poetry:
 
 ```bash
-password-exporter convert --passphrase "mypassphrase"
+poetry run password-exporter --passphrase "mypassphrase"
 ```
 
-This command will process the `.gpg` files in your password store directory and generate a CSV file with the structure described above.
+- If the `--passphrase` argument is omitted, the script will use the passphrase stored in the `GPG_PASSPHRASE` environment variable.
+
+### Option 2: Using the Installed Script Directly
+
+Alternatively, you can run the installed script directly:
+
+```bash
+password-exporter --passphrase "mypassphrase"
+```
+
+- Similar to the Poetry option, if the `--passphrase` argument is omitted, the script defaults to the `GPG_PASSPHRASE` environment variable.
+
+This command processes the `.gpg` files in your password store directory and generates a CSV file according to the structure described above.
+
+### Additional Options
+
+The script supports several options to customize its behavior:
+
+- `--password-store-dir`: Specify a custom password store directory (default: `~/.password-store`).
+- `--output-csv`: Specify the output CSV file path (default: `~/Documents/passwords_export.csv`).
+- `--max-workers`: Define the number of concurrent workers to speed up processing (default: 4).
+
+To see all available options, use the `--help` flag:
+
+```bash
+password-exporter --help
+```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request or open an issue to discuss improvements.
+Contributions are highly encouraged! Please feel free to submit a Pull Request or open an issue to discuss any improvements or feature requests.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for full details.
