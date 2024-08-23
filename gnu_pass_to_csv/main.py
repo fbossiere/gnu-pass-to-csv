@@ -10,10 +10,17 @@ from loguru import logger
 
 
 class PasswordExporter:
-    def __init__(self, passphrase: str, password_store_dir: str, output_csv: str):
+    def __init__(
+        self,
+        passphrase: str,
+        password_store_dir: str,
+        output_csv: str,
+        max_workers: int,
+    ):
         self.passphrase = passphrase
         self.password_store_dir = os.path.expanduser(password_store_dir)
         self.output_csv = output_csv
+        self.max_workers = max_workers
 
     def load_environment(self):
         load_dotenv()
@@ -82,7 +89,9 @@ class PasswordExporter:
             )
             raise typer.Exit(code=1)
 
-        with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=self.max_workers
+        ) as executor:
             results = list(executor.map(self.extract_password_details, gpg_files))
 
         # Filter out any None results from failed decryptions
@@ -109,8 +118,9 @@ def convert(
     output_csv: str = typer.Option(
         "../data/passwords_export.csv", help="Output CSV file path"
     ),
+    max_workers: int = typer.Option(4, help="Number of concurrent workers"),
 ):
-    exporter = PasswordExporter(passphrase, password_store_dir, output_csv)
+    exporter = PasswordExporter(passphrase, password_store_dir, output_csv, max_workers)
     exporter.export_passwords()
 
 
