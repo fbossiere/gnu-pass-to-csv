@@ -1,7 +1,9 @@
 import concurrent.futures
 import os
+import re
 import subprocess
 from csv import QUOTE_NONNUMERIC
+from pathlib import Path
 
 import pandas as pd
 import typer
@@ -10,6 +12,10 @@ from loguru import logger
 
 
 class PasswordExporter:
+    EMAIL_PATTERN = r"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
+    URL_PATTERN = r"/([^/]+\.[^/]+)/"
+    SECOND_URL_PATTERN = r"/([^/]+\.[^/]+).gpg"
+
     def __init__(
         self,
         passphrase: str,
@@ -19,7 +25,7 @@ class PasswordExporter:
     ):
         self.passphrase = passphrase
         self.password_store_dir = os.path.expanduser(password_store_dir)
-        self.output_csv = output_csv
+        self.output_csv = Path(output_csv)
         self.max_workers = max_workers
 
     def load_environment(self):
@@ -58,6 +64,38 @@ class PasswordExporter:
 
         return result.stdout
 
+    @classmethod
+    def extract_url(cls, entry_name):
+        possible_url = re.search(cls.URL_PATTERN, entry_name)
+        if possible_url:
+            return possible_url.group(1)
+        else:
+            other_possible_url = re.search(cls.SECOND_URL_PATTERN, entry_name)
+            return other_possible_url.group(1) if other_possible_url else ""
+
+    @classmethod
+    def extract_email(cls, password_details):
+        login_line = next(
+            (line for line in password_details[1:] if "login:" in line), ""
+        )
+        email_match = re.search(cls.EMAIL_PATTERN, login_line)
+        return email_match.group(1) if email_match else ""
+
+    @staticmethod
+    def extract_username(password_details):
+        username_line = next(
+            (line for line in password_details[1:] if "username:" in line), ""
+        )
+        return username_line.split(":")[1].strip() if username_line else ""
+
+    @staticmethod
+    def extract_notes(password_details):
+        return [
+            line
+            for line in password_details[1:]
+            if not any(keyword in line for keyword in ["login:", "username:"])
+        ]
+
     def extract_password_details(self, file_path: str) -> dict[str, str] | None:
         """Extract password details from a decrypted GPG file."""
         decrypted_content = self.decrypt_gpg_file(file_path)
@@ -65,15 +103,23 @@ class PasswordExporter:
         if not decrypted_content:
             return None
 
-        lines = decrypted_content.splitlines()
+        # Process decrypted lines to extract relevant details
+        # Extract possible URL from the entry name
+        url = self.extract_url(file_path)
+        password = decrypted_content[0]
+        email = self.extract_email(decrypted_content)
+        username = self.extract_username(decrypted_content)
+        notes = self.extract_notes(decrypted_content)
+
+        # Construct the details dictionary
         return {
-            "name": os.path.relpath(file_path, self.password_store_dir),
-            "url": "",
-            "email": "",
-            "username": "",
-            "password": lines[0] if lines else "",
-            "note": "\n".join(lines[1:]),
-            "totp": "",
+            "name": url,
+            "url": url,
+            "email": email,
+            "username": username,
+            "password": password,
+            "note": "\n".join(notes),
+            "totp": "",  # If TOTP is available, extract it
             "vault": "Personal",
         }
 
@@ -99,12 +145,9 @@ class PasswordExporter:
 
         # Create a DataFrame and export to CSV
         df = pd.DataFrame(filtered_results)
-        # Assuming `self.output_csv` is the path to your CSV file
-        output_folder = os.path.dirname(self.output_csv)
 
-        # Check if the directory exists, if not, create it
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
+        # Assuming `self.output_csv` is the path to your CSV file
+        self.output_csv.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(self.output_csv, index=False, quoting=QUOTE_NONNUMERIC)
 
         typer.echo(f"Passwords exported successfully to {self.output_csv}")
@@ -116,13 +159,16 @@ app = typer.Typer()
 @app.command()
 def convert(
     passphrase: str = typer.Option(
-        ..., prompt=True, hide_input=True, help="GPG passphrase"
+        os.getenv("GPG_PASSPHRASE", ""),
+        prompt=not bool(os.getenv("GPG_PASSPHRASE")),
+        hide_input=True,
+        help="GPG passphrase",
     ),
     password_store_dir: str = typer.Option(
         "~/.password-store", help="Password store directory"
     ),
     output_csv: str = typer.Option(
-        "../data/passwords_export.csv", help="Output CSV file path"
+        "~/Documents/passwords_export.csv", help="Output CSV file path"
     ),
     max_workers: int = typer.Option(4, help="Number of concurrent workers"),
 ):
