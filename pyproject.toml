@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "gnu-pass-to-csv"
+version = "1.0.0"
+description = ""
+authors = ["Francois Bossiere <francois.bossiere@protonmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pandas = "^2.2.2"
+python-dotenv = "^1.0.1"
+loguru = "^0.7.2"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.11.1"
+ruff = "^0.6.2"
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
