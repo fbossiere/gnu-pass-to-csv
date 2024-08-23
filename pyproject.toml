@@ -1,9 +1,14 @@
 [tool.poetry]
 name = "gnu-pass-to-csv"
 version = "1.0.0"
-description = ""
+description = "Convert GNU pass password store to CSV"
 authors = ["Francois Bossiere <francois.bossiere@protonmail.com>"]
 readme = "README.md"
+license = "MIT"
+
+
+[tool.poetry.scripts]
+password-exporter = "gnu_pass_to_csv.main:app"
 
 [tool.poetry.dependencies]
 python = "^3.12"

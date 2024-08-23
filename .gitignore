@@ -2,3 +2,13 @@
 data/
 .env
 .vscode/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+dist/
+build/
+*.egg-info/
+*.egg/
+*.log
+*.csv
