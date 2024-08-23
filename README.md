@@ -13,7 +13,7 @@ A Python tool to decrypt and export your GPG-encrypted passwords stored in a pas
 
 - Python 3.12
 - GnuPG (GPG) installed and configured on your system
-- `poetry` for dependency management
+- `Poetry` for dependency management
 
 ## Installation
 
@@ -23,6 +23,16 @@ A Python tool to decrypt and export your GPG-encrypted passwords stored in a pas
    git clone git@gitlab.com:fbossiere/gnu-pass-to-csv.git
    cd gnu-pass-to-csv
    ```
+
+2. **Install dependencies with Poetry:**
+
+   Ensure you have Poetry installed. If not, install it following the [official guide](https://python-poetry.org/docs/#installation).
+
+   ```bash
+   poetry install
+   ```
+
+   This command will create a virtual environment and install all necessary dependencies.
 
 ## CSV File Format
 
@@ -54,13 +64,25 @@ The exported CSV file will contain the following fields:
 
 ## Usage
 
-After installing the necessary dependencies, you can run the script to decrypt your GPG-encrypted passwords and export them to a CSV file:
+After installing the necessary dependencies, you can run the script to decrypt your GPG-encrypted passwords and export them to a CSV file.
+
+### Option 1: Using Poetry
+
+You can run the script directly using Poetry's run command:
 
 ```bash
-python gnu-pass-to-csv/main.py --passphrase "mypassphrase"
+poetry run password-exporter convert --passphrase "mypassphrase"
 ```
 
-This command will process the `.gpg` files in your password store directory and generate a `passwords.csv` file with the structure described above.
+### Option 2: Using the Installed Script
+
+If you prefer to use the installed script directly, you can run:
+
+```bash
+password-exporter convert --passphrase "mypassphrase"
+```
+
+This command will process the `.gpg` files in your password store directory and generate a CSV file with the structure described above.
 
 ## Contributing
 
