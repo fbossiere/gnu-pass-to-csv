@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pandas as pd
 import typer
-from dotenv import load_dotenv
 from loguru import logger
 
 
@@ -18,18 +17,23 @@ class PasswordExporter:
 
     def __init__(
         self,
-        passphrase: str,
+        passphrase: str | None,
         password_store_dir: str,
         output_csv: str,
         max_workers: int,
     ):
-        self.passphrase = passphrase
         self.password_store_dir = os.path.expanduser(password_store_dir)
         self.output_csv = Path(output_csv)
         self.max_workers = max_workers
-
-    def load_environment(self):
-        load_dotenv()
+        if passphrase is not None:
+            self.passphrase = passphrase
+        else:
+            possible_passphrase = os.getenv("GPG_PASSPHRASE")
+            if possible_passphrase is None:
+                typer.echo("GPG passphrase not provided.", err=True)
+                raise typer.Exit(1)
+            else:
+                self.passphrase = possible_passphrase
 
     def list_gpg_files(self, folder_path: str) -> list[str]:
         """List all GPG files in the provided directory."""
@@ -124,8 +128,6 @@ class PasswordExporter:
         }
 
     def export_passwords(self):
-        self.load_environment()
-
         gpg_files = self.list_gpg_files(self.password_store_dir)[:3]
         logger.info(f"Found {len(gpg_files)} GPG files.")
 
@@ -158,12 +160,6 @@ app = typer.Typer()
 
 @app.command()
 def convert(
-    passphrase: str = typer.Option(
-        os.getenv("GPG_PASSPHRASE", ""),
-        prompt=not bool(os.getenv("GPG_PASSPHRASE")),
-        hide_input=True,
-        help="GPG passphrase",
-    ),
     password_store_dir: str = typer.Option(
         "~/.password-store", help="Password store directory"
     ),
@@ -171,6 +167,12 @@ def convert(
         "~/Documents/passwords_export.csv", help="Output CSV file path"
     ),
     max_workers: int = typer.Option(4, help="Number of concurrent workers"),
+    passphrase: str | None = typer.Option(
+        None,
+        prompt=False,
+        hide_input=True,
+        help="GPG passphrase. If not provided, will use the GPG_PASSPHRASE environment variable.",
+    ),
 ):
     exporter = PasswordExporter(passphrase, password_store_dir, output_csv, max_workers)
     exporter.export_passwords()
