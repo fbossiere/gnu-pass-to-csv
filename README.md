@@ -98,6 +98,7 @@ The script supports several options to customize its behavior:
 - `--output-csv`: Specify the output CSV file path (default: `~/Documents/passwords_export.csv`).
 - `--max-workers`: Define the number of concurrent workers to speed up processing (default: 4).
 - `--passphrase`: Provide the GPG passphrase directly as an argument. If omitted, the script will use the `GPG_PASSPHRASE` environment variable.
+- `--vault`: Define the vault category for the exported passwords (default: "Personal").
 
 To see all available options, use the `--help` flag:
 
