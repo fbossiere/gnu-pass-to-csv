@@ -1,21 +1,27 @@
 # GNU GPG Password Exporter
 
-A Python tool to decrypt and export your GPG-encrypted passwords stored in a pass-compatible directory to a CSV file. This tool is ideal for users who manage their passwords using `pass` and need to export them for backup, migration, or integration purposes.
+`gnu-pass-to-csv` is a Python tool designed to decrypt and export your GPG-encrypted passwords stored in a pass-compatible directory to a CSV file. This tool is ideal for users who manage their passwords using `pass` and need to export them for backup, migration, or integration purposes.
 
 ## Features
 
 - **Automatic GPG Decryption:** Seamlessly decrypts `.gpg` files in your password store directory.
 - **Parallel Processing:** Leverages concurrent processing to accelerate the decryption and export operations.
 - **Customizable Output:** Easily export password data to a CSV file with a customizable structure.
-- **Environment Variable Support:** Supports loading configurations from a .env file, including GPG passphrase and directory paths.
 
 ## Requirements
 
 - **Python 3.12** or higher
 - **GnuPG (GPG):** Ensure GPG is installed and properly configured on your system.
-- **Poetry:** For dependency management and virtual environment setup.
 
 ## Installation
+
+You can install `gnu-pass-to-csv` directly from PyPI:
+
+```bash
+pip install gnu-pass-to-csv
+```
+
+Alternatively, if you prefer using the source code:
 
 1. **Clone the repository:**
 
@@ -54,35 +60,35 @@ The tool exports your passwords to a CSV file with the following structure:
 ### Field Descriptions
 
 - **name**: Relative path to the password file from the base password store directory.
-- **url**: URL associated with the password (if available)
-- **email**: Email address associated with the password (if available)
-- **username**: Username associated with the password (if available)
+- **url**: URL associated with the password (if available).
+- **email**: Email address associated with the password (if available).
+- **username**: Username associated with the password (if available).
 - **password**: The first line of the decrypted file, typically the password.
 - **note**: Additional lines from the decrypted file concatenated into a single string.
-- **totp**: Field for storing Time-based One-Time Passwords (TOTP) (if available)
+- **totp**: Field for storing Time-based One-Time Passwords (TOTP) (if available).
 - **vault**: The vault category to which the password belongs (default is "Personal").
 
 ## Usage
 
-After installing the dependencies, you can use the tool to decrypt your GPG-encrypted passwords and export them to a CSV file.
+After installing the package, you can use the tool to decrypt your GPG-encrypted passwords and export them to a CSV file.
 
-### Option 1: Running with Poetry
+### Option 1: Using the Installed Script Directly
 
-Execute the script using Poetry:
-
-```bash
-poetry run password-exporter
-```
-
-### Option 2: Using the Installed Script Directly
-
-Alternatively, you can run the installed script directly:
+Simply run the installed script:
 
 ```bash
-password-exporter
+gnu-pass-to-csv
 ```
 
 This command processes the `.gpg` files in your password store directory and generates a CSV file according to the structure described above.
+
+### Option 2: Running with Poetry
+
+If you've installed the dependencies using Poetry, you can run the script as follows:
+
+```bash
+poetry run gnu-pass-to-csv
+```
 
 ### Additional Options
 
@@ -96,7 +102,7 @@ The script supports several options to customize its behavior:
 To see all available options, use the `--help` flag:
 
 ```bash
-password-exporter --help
+gnu-pass-to-csv --help
 ```
 
 ## Contributing
