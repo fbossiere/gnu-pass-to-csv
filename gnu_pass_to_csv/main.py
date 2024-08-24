@@ -11,6 +11,8 @@ from loguru import logger
 
 
 class PasswordExporter:
+    """Export passwords from GnuPG encrypted files to a CSV file."""
+
     EMAIL_PATTERN = r"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
     URL_PATTERN = r"/([^/]+\.[^/]+)/"
     SECOND_URL_PATTERN = r"/([^/]+\.[^/]+).gpg"
@@ -22,7 +24,18 @@ class PasswordExporter:
         output_csv: str,
         max_workers: int,
     ):
-        self.password_store_dir = os.path.expanduser(password_store_dir)
+        """Initialize the PasswordExporter class.
+
+        Args:
+            passphrase (str | None): The GPG passphrase. If not provided, will use the GPG_PASSPHRASE environment variable.
+            password_store_dir (str): The directory where the GnuPG encrypted files are stored.
+            output_csv (str): The path to the output CSV file.
+            max_workers (int): The number of concurrent workers to use.
+
+        Raises:
+            typer.Exit: If the GPG passphrase is not provided.
+        """
+        self.password_store_dir = Path(os.path.expanduser(password_store_dir))
         self.output_csv = Path(output_csv)
         self.max_workers = max_workers
         if passphrase is not None:
@@ -35,17 +48,26 @@ class PasswordExporter:
             else:
                 self.passphrase = possible_passphrase
 
-    def list_gpg_files(self, folder_path: str) -> list[str]:
-        """List all GPG files in the provided directory."""
-        return [
-            os.path.join(root, file)
-            for root, _, files in os.walk(folder_path)
-            for file in files
-            if file.endswith(".gpg")
-        ]
+    def list_gpg_files(self, folder_path: Path) -> list[Path]:
+        """List all GPG files in the provided directory.
 
-    def decrypt_gpg_file(self, file_path: str) -> list[str]:
-        """Decrypts a GPG file and returns the decrypted content as a string."""
+        Args:
+            folder_path (Path): Path to the directory containing GPG files
+
+        Returns:
+            list[Path]: List of GPG files
+        """
+        return list(folder_path.rglob("*.gpg"))
+
+    def decrypt_gpg_file(self, file_path: Path) -> list[str]:
+        """Decrypts a GPG file and returns the decrypted content as a list of lines.
+
+        Args:
+            file_path (Path): Path to the GPG file
+
+        Returns:
+            list[str]: Decrypted content of the GPG file
+        """
         result = subprocess.run(
             [
                 "gpg",
@@ -56,7 +78,7 @@ class PasswordExporter:
                 "--passphrase",
                 self.passphrase,
                 "--decrypt",
-                file_path,
+                str(file_path),
             ],
             capture_output=True,
             text=True,
@@ -69,39 +91,82 @@ class PasswordExporter:
         return result.stdout.splitlines()
 
     @classmethod
-    def extract_url(cls, entry_name):
-        possible_url = re.search(cls.URL_PATTERN, entry_name)
+    def extract_url(cls, file_path: Path) -> str:
+        """Extract URL from the entry name.
+
+        Args:
+            file_path (Path):  Path to the GPG file
+
+        Returns:
+            str: URL extracted from the entry name
+        """
+        possible_url = re.search(cls.URL_PATTERN, str(file_path))
         if possible_url:
             return possible_url.group(1)
         else:
-            other_possible_url = re.search(cls.SECOND_URL_PATTERN, entry_name)
+            other_possible_url = re.search(cls.SECOND_URL_PATTERN, str(file_path))
             return other_possible_url.group(1) if other_possible_url else ""
 
     @classmethod
-    def extract_email(cls, password_details):
-        login_line = next(
-            (line for line in password_details[1:] if "login:" in line), ""
-        )
-        email_match = re.search(cls.EMAIL_PATTERN, login_line)
-        return email_match.group(1) if email_match else ""
+    def extract_email(cls, file_path: Path, notes: list[str]) -> str:
+        """Extract email from the decrypted content.
+
+        Args:
+            file_path (Path): Path to the GPG file
+            notes (list[str]): Decrypted content of the GPG file
+
+        Returns:
+            str: Extracted email
+        """
+        possible_email_line = next((line for line in notes), "")
+        email_match = re.search(cls.EMAIL_PATTERN, possible_email_line)
+        if email_match:
+            return email_match.group(1)
+        email_match = re.search(cls.EMAIL_PATTERN, str(file_path))
+        if email_match:
+            return email_match.group(1)
+        return ""
 
     @staticmethod
-    def extract_username(password_details):
-        username_line = next(
-            (line for line in password_details[1:] if "username:" in line), ""
-        )
+    def extract_username(notes: list[str]) -> str:
+        """Extract username from the decrypted content.
+
+        Args:
+            notes (list[str]): Decrypted content of the GPG file
+
+        Returns:
+            str: Extracted username
+        """
+        username_line = next((line for line in notes if "username:" in line), "")
         return username_line.split(":")[1].strip() if username_line else ""
 
     @staticmethod
-    def extract_notes(password_details):
-        return [
-            line
-            for line in password_details[1:]
-            if not any(keyword in line for keyword in ["login:", "username:"])
-        ]
+    def extract_notes(raw_notes: list[str]) -> str:
+        """Extract notes from the decrypted content.
 
-    def extract_password_details(self, file_path: str) -> dict[str, str] | None:
-        """Extract password details from a decrypted GPG file."""
+        Args:
+            raw_notes (list[str]): Decrypted content of the GPG file
+
+        Returns:
+            str: Extracted notes
+        """
+        return "\n".join(
+            [
+                line
+                for line in raw_notes[1:]
+                if not any(keyword in line for keyword in ["login:", "username:"])
+            ]
+        )
+
+    def extract_password_details(self, file_path: Path) -> dict[str, str] | None:
+        """Extract password details from a decrypted GPG file.
+
+        Args:
+            file_path (Path): Path to the GPG file
+
+        Returns:
+            dict[str, str] | None: Extracted password details
+        """
         decrypted_content = self.decrypt_gpg_file(file_path)
 
         if not decrypted_content:
@@ -111,8 +176,8 @@ class PasswordExporter:
         # Extract possible URL from the entry name
         url = self.extract_url(file_path)
         password = decrypted_content[0]
-        email = self.extract_email(decrypted_content)
-        username = self.extract_username(decrypted_content)
+        email = self.extract_email(file_path, decrypted_content[1:])
+        username = self.extract_username(decrypted_content[1:])
         notes = self.extract_notes(decrypted_content)
 
         # Construct the details dictionary
@@ -122,12 +187,17 @@ class PasswordExporter:
             "email": email,
             "username": username or email,
             "password": password,
-            "note": "\n".join(notes),
+            "note": notes,
             "totp": "",  # If TOTP is available, extract it
             "vault": "Personal",
         }
 
     def export_passwords(self):
+        """Export passwords to a CSV file.
+
+        Raises:
+            typer.Exit: If no password entries are found
+        """
         gpg_files = self.list_gpg_files(self.password_store_dir)
         logger.info(f"Found {len(gpg_files)} GPG files.")
 
@@ -174,6 +244,14 @@ def convert(
         help="GPG passphrase. If not provided, will use the GPG_PASSPHRASE environment variable.",
     ),
 ):
+    """Export passwords from GnuPG encrypted files to a CSV file.
+
+    Args:
+        password_store_dir (str, optional): The directory where the GnuPG encrypted files are stored. Defaults to typer.Option( "~/.password-store", help="Password store directory" ).
+        output_csv (str, optional): The path to the output CSV file. Defaults to typer.Option( "~/Documents/passwords_export.csv", help="Output CSV file path" ).
+        max_workers (int, optional): The number of concurrent workers to use. Defaults to typer.Option( 4, help="Number of concurrent workers" ).
+        passphrase (str | None, optional): The GPG passphrase. If not provided, will use the GPG_PASSPHRASE environment variable. Defaults to typer.Option( None, prompt=False, hide_input=True, help="GPG passphrase. If not provided, will use the GPG_PASSPHRASE environment variable." ).
+    """
     exporter = PasswordExporter(passphrase, password_store_dir, output_csv, max_workers)
     exporter.export_passwords()
 
