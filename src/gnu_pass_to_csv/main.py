@@ -19,23 +19,26 @@ class PasswordExporter:
 
     def __init__(
         self,
-        passphrase: str | None,
         password_store_dir: str,
+        vault: str,
         output_csv: str,
         max_workers: int,
+        passphrase: str | None,
     ):
         """Initialize the PasswordExporter class.
 
         Args:
-            passphrase (str | None): The GPG passphrase. If not provided, will use the GPG_PASSPHRASE environment variable.
             password_store_dir (str): The directory where the GnuPG encrypted files are stored.
+            vault (str): Vault name.
             output_csv (str): The path to the output CSV file.
             max_workers (int): The number of concurrent workers to use.
+            passphrase (str | None): The GPG passphrase. If not provided, will use the GPG_PASSPHRASE environment variable.
 
         Raises:
             typer.Exit: If the GPG passphrase is not provided.
         """
         self.password_store_dir = Path(os.path.expanduser(password_store_dir))
+        self.vault = vault
         self.output_csv = Path(output_csv)
         self.max_workers = max_workers
         if passphrase is not None:
@@ -189,7 +192,7 @@ class PasswordExporter:
             "password": password,
             "note": notes,
             "totp": "",  # If TOTP is available, extract it
-            "vault": "Personal",
+            "vault": self.vault,
         }
 
     def export_passwords(self):
@@ -233,6 +236,7 @@ def convert(
     password_store_dir: str = typer.Option(
         "~/.password-store", help="Password store directory"
     ),
+    vault: str = typer.Option("Password Store", help="Vault name"),
     output_csv: str = typer.Option(
         "~/Documents/passwords_export.csv", help="Output CSV file path"
     ),
@@ -252,7 +256,9 @@ def convert(
         max_workers (int, optional): The number of concurrent workers to use. Defaults to typer.Option( 4, help="Number of concurrent workers" ).
         passphrase (str | None, optional): The GPG passphrase. If not provided, will use the GPG_PASSPHRASE environment variable. Defaults to typer.Option( None, prompt=False, hide_input=True, help="GPG passphrase. If not provided, will use the GPG_PASSPHRASE environment variable." ).
     """
-    exporter = PasswordExporter(passphrase, password_store_dir, output_csv, max_workers)
+    exporter = PasswordExporter(
+        password_store_dir, vault, output_csv, max_workers, passphrase
+    )
     exporter.export_passwords()
 
 

@@ -1,10 +1,19 @@
 [tool.poetry]
 name = "gnu-pass-to-csv"
-version = "1.0.0"
-description = "Convert GNU pass password store to CSV"
+version = "1.0.1"
 authors = ["Francois Bossiere <francois.bossiere@protonmail.com>"]
+description = "Convert GNU pass password store to CSV"
 readme = "README.md"
+repository = "https://gitlab.com/fbossiere/gnu-pass-to-csv.git"
 license = "MIT"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Utilities"
+]
 
 
 [tool.poetry.scripts]
