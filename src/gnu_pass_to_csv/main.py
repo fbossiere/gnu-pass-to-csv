@@ -14,8 +14,8 @@ class PasswordExporter:
     """Export passwords from GnuPG encrypted files to a CSV file."""
 
     EMAIL_PATTERN = r"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
-    URL_PATTERN = r"/([^/]+\.[^/]+)/"
-    SECOND_URL_PATTERN = r"/([^/]+\.[^/]+).gpg"
+    URL_PATTERN = r"(?<!@)(?<!\.)\b(?:https?://)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?=\.gpg)\b"
+    SECOND_URL_PATTERN = r"(?<!@)(?<!\.)\b(?:https?://)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?=\b|\s|\/)"
 
     def __init__(
         self,
@@ -93,6 +93,21 @@ class PasswordExporter:
 
         return result.stdout.splitlines()
 
+    def extract_name(self, file_path: Path) -> str:
+        """Extract name from the entry name.
+
+        Args:
+            file_path (Path): Path to the GPG file
+
+        Returns:
+            str: Name extracted from the entry name
+        """
+        file_path_after_password_dir = file_path.relative_to(self.password_store_dir)
+        if file_path_after_password_dir.parent == Path("."):
+            return str(file_path_after_password_dir).replace(".gpg", "")
+        else:
+            return f"{file_path_after_password_dir.parent.name} - {file_path_after_password_dir.stem.replace('.gpg', '')}"
+
     @classmethod
     def extract_url(cls, file_path: Path) -> str:
         """Extract URL from the entry name.
@@ -140,8 +155,15 @@ class PasswordExporter:
         Returns:
             str: Extracted username
         """
-        username_line = next((line for line in notes if "username:" in line), "")
-        return username_line.split(":")[1].strip() if username_line else ""
+        possible_username_line = next(
+            (line for line in notes if "username:" in line), ""
+        )
+        if possible_username_line:
+            return possible_username_line.split(":")[1].strip()
+        possible_login_line = next((line for line in notes if "login:" in line), "")
+        if possible_login_line:
+            return possible_login_line.split(":")[1].strip()
+        return ""
 
     @staticmethod
     def extract_notes(raw_notes: list[str]) -> str:
@@ -177,6 +199,7 @@ class PasswordExporter:
 
         # Process decrypted lines to extract relevant details
         # Extract possible URL from the entry name
+        name = self.extract_name(file_path)
         url = self.extract_url(file_path)
         password = decrypted_content[0]
         email = self.extract_email(file_path, decrypted_content[1:])
@@ -185,7 +208,7 @@ class PasswordExporter:
 
         # Construct the details dictionary
         return {
-            "name": url,
+            "name": name,
             "url": url,
             "email": email,
             "username": username or email,
