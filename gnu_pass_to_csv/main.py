@@ -44,7 +44,7 @@ class PasswordExporter:
             if file.endswith(".gpg")
         ]
 
-    def decrypt_gpg_file(self, file_path: str) -> str:
+    def decrypt_gpg_file(self, file_path: str) -> list[str]:
         """Decrypts a GPG file and returns the decrypted content as a string."""
         result = subprocess.run(
             [
@@ -64,9 +64,9 @@ class PasswordExporter:
 
         if result.returncode != 0:
             logger.error(f"Failed to decrypt {file_path}: {result.stderr.strip()}")
-            return ""
+            return []
 
-        return result.stdout
+        return result.stdout.splitlines()
 
     @classmethod
     def extract_url(cls, entry_name):
@@ -120,7 +120,7 @@ class PasswordExporter:
             "name": url,
             "url": url,
             "email": email,
-            "username": username,
+            "username": username or email,
             "password": password,
             "note": "\n".join(notes),
             "totp": "",  # If TOTP is available, extract it
@@ -128,7 +128,7 @@ class PasswordExporter:
         }
 
     def export_passwords(self):
-        gpg_files = self.list_gpg_files(self.password_store_dir)[:3]
+        gpg_files = self.list_gpg_files(self.password_store_dir)
         logger.info(f"Found {len(gpg_files)} GPG files.")
 
         if not gpg_files:
@@ -149,7 +149,7 @@ class PasswordExporter:
         df = pd.DataFrame(filtered_results)
 
         # Assuming `self.output_csv` is the path to your CSV file
-        self.output_csv.parent.mkdir(parents=True, exist_ok=True)
+        self.output_csv.expanduser().parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(self.output_csv, index=False, quoting=QUOTE_NONNUMERIC)
 
         typer.echo(f"Passwords exported successfully to {self.output_csv}")
