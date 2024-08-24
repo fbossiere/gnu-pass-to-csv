@@ -71,20 +71,16 @@ After installing the dependencies, you can use the tool to decrypt your GPG-encr
 Execute the script using Poetry:
 
 ```bash
-poetry run password-exporter --passphrase "mypassphrase"
+poetry run password-exporter
 ```
-
-- If the `--passphrase` argument is omitted, the script will use the passphrase stored in the `GPG_PASSPHRASE` environment variable.
 
 ### Option 2: Using the Installed Script Directly
 
 Alternatively, you can run the installed script directly:
 
 ```bash
-password-exporter --passphrase "mypassphrase"
+password-exporter
 ```
-
-- Similar to the Poetry option, if the `--passphrase` argument is omitted, the script defaults to the `GPG_PASSPHRASE` environment variable.
 
 This command processes the `.gpg` files in your password store directory and generates a CSV file according to the structure described above.
 
@@ -95,6 +91,7 @@ The script supports several options to customize its behavior:
 - `--password-store-dir`: Specify a custom password store directory (default: `~/.password-store`).
 - `--output-csv`: Specify the output CSV file path (default: `~/Documents/passwords_export.csv`).
 - `--max-workers`: Define the number of concurrent workers to speed up processing (default: 4).
+- `--passphrase`: Provide the GPG passphrase directly as an argument. If omitted, the script will use the `GPG_PASSPHRASE` environment variable.
 
 To see all available options, use the `--help` flag:
 
