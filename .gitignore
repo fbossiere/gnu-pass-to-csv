@@ -13,6 +13,7 @@ dist/
 .coverage
 coverage.xml
 htmlcov/
+site/
 
 # Editors and operating systems
 .idea/
