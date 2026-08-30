@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/fbossiere/gnu-pass-to-csv/security/advisories/new
+    about: Report vulnerabilities privately without credentials or real exports.
+  - name: Usage and support
+    url: https://github.com/fbossiere/gnu-pass-to-csv/blob/main/SUPPORT.md
+    about: Read the support and redaction guidance before opening an issue.
+

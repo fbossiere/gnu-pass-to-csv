@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a reproducible defect using synthetic, redacted data.
+title: "bug: "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Never attach a real password store, GPG file, CSV export, passphrase,
+        private key, password, or TOTP seed. Use synthetic examples only.
+  - type: input
+    id: version
+    attributes:
+      label: gnu-pass-to-csv version
+      placeholder: "2.0.0"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, Python version, and pass version.
+      placeholder: "Ubuntu 26.04; Python 3.13.5; pass 1.7.4"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction with synthetic data
+      description: Include the redacted command and a fake entry shape.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Redact home paths, emails, URLs, key IDs, and all credentials.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Sensitive-data check
+      options:
+        - label: I used only synthetic data and removed all credentials and identifying paths.
+          required: true
+        - label: This is not a security vulnerability requiring private reporting.
+          required: true
+

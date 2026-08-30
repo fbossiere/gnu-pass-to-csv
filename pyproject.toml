@@ -1,39 +1,99 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
 name = "gnu-pass-to-csv"
-version = "1.0.8"
-authors = ["Francois Bossiere <francois.bossiere@protonmail.com>"]
-description = "Convert GNU pass password store to CSV"
+version = "2.0.0"
+description = "Export a pass password store to a Proton Pass-compatible CSV without handling GPG passphrases"
 readme = "README.md"
-repository = "https://gitlab.com/fbossiere/gnu-pass-to-csv.git"
+requires-python = ">=3.11"
 license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "François Bossière", email = "francois.bossiere@protonmail.com" },
+]
+keywords = ["pass", "password-store", "proton-pass", "csv", "migration"]
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "Topic :: Utilities"
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Security",
+  "Topic :: Utilities",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2.2,<2",
+  "hatchling==1.27.0",
+  "mypy>=1.15,<2",
+  "pre-commit>=4.1,<5",
+  "pytest>=8.3,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.11,<1",
+  "twine>=6.1,<7",
 ]
 
+[project.scripts]
+gnu-pass-to-csv = "gnu_pass_to_csv.cli:main"
 
-[tool.poetry.scripts]
-gnu-pass-to-csv = "gnu_pass_to_csv.main:app"
+[project.urls]
+Changelog = "https://github.com/fbossiere/gnu-pass-to-csv/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/fbossiere/gnu-pass-to-csv#readme"
+Issues = "https://github.com/fbossiere/gnu-pass-to-csv/issues"
+Repository = "https://github.com/fbossiere/gnu-pass-to-csv"
+Security = "https://github.com/fbossiere/gnu-pass-to-csv/security/policy"
 
-[tool.poetry.dependencies]
-python = "^3.12"
-pandas = "^2.2.2"
-python-dotenv = "^1.0.1"
-loguru = "^0.7.2"
-typer = "^0.12.4"
+[tool.hatch.build.targets.sdist]
+include = [
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/README.md",
+  "/SECURITY.md",
+  "/src",
+]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/gnu_pass_to_csv"]
 
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.11.1"
-ruff = "^0.6.2"
-ipykernel = "^6.29.5"
-pre-commit = "^3.8.0"
-pandas-stubs = "^2.2.2.240807"
+[tool.ruff]
+target-version = "py311"
+line-length = 88
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff.lint]
+select = ["A", "B", "BLE", "C4", "E", "F", "I", "N", "PERF", "PIE", "PL", "PTH", "RUF", "S", "SIM", "UP"]
+ignore = ["S603"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLR2004", "S101", "S105"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers --cov=gnu_pass_to_csv --cov-report=term-missing --cov-fail-under=95"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+omit = ["src/gnu_pass_to_csv/__main__.py"]
+
+[tool.coverage.report]
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+  "raise NotImplementedError",
+]
+show_missing = true

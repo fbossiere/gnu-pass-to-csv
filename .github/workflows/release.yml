@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  UV_LOCKED: "1"
+  UV_NO_PROGRESS: "1"
+
+jobs:
+  build:
+    name: build release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: false
+      - name: Install development environment
+        run: uv sync --extra dev
+      - name: Verify tag and package version
+        run: python -c 'import os,tomllib; version=tomllib.load(open("pyproject.toml","rb"))["project"]["version"]; tag=os.environ["GITHUB_REF_NAME"]; raise SystemExit(f"tag {tag} does not match version {version}" if tag != f"v{version}" else 0)'
+      - name: Run complete quality gate
+        run: |
+          uv lock --check
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run mypy
+          uv run pytest
+      - name: Build and check distributions
+        run: |
+          uv build
+          uv run twine check dist/*
+      - name: Smoke-test built wheel
+        run: |
+          uv venv --python 3.13 .smoke-venv
+          uv pip install --python .smoke-venv/bin/python dist/*.whl
+          .smoke-venv/bin/gnu-pass-to-csv --version
+          .smoke-venv/bin/gnu-pass-to-csv --help
+      - name: Create checksums
+        run: |
+          mkdir -p release-assets
+          sha256sum dist/* > release-assets/SHA256SUMS
+      - name: Upload immutable release artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-artifacts-${{ github.ref_name }}
+          path: |
+            dist/*
+            release-assets/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
+
+  publish-pypi:
+    name: publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/gnu-pass-to-csv/
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-artifacts-${{ github.ref_name }}
+          path: release-artifacts
+      - name: Publish with trusted publishing
+        uses: pypa/gh-action-pypi-publish@ec4db0b4ddc65acdf4bff5fa45ac92d78b56bdf0 # v1.9.0
+        with:
+          packages-dir: release-artifacts/dist/
+          attestations: true
+
+  publish-github:
+    name: publish GitHub Release
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-artifacts-${{ github.ref_name }}
+          path: release-artifacts
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release create "$GITHUB_REF_NAME" release-artifacts/dist/* release-artifacts/release-assets/SHA256SUMS --verify-tag --generate-notes --title "$GITHUB_REF_NAME"

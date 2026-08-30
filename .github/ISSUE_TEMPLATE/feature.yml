@@ -1,0 +1,40 @@
+name: Feature request
+description: Propose a focused, evidence-based improvement.
+title: "feature: "
+labels: [enhancement, needs-triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Migration problem
+      description: What real workflow is blocked or error-prone?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Include a synthetic input/output example when format mapping changes.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Security and compatibility impact
+      description: Explain effects on plaintext, subprocesses, files, and CSV compatibility.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Sensitive-data check
+      options:
+        - label: All examples are synthetic and contain no real credentials or identifying data.
+          required: true
+
