@@ -3,6 +3,7 @@
 [![CI](https://github.com/fbossiere/gnu-pass-to-csv/actions/workflows/ci.yml/badge.svg)](https://github.com/fbossiere/gnu-pass-to-csv/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/gnu-pass-to-csv)](https://pypi.org/project/gnu-pass-to-csv/)
 [![Python](https://img.shields.io/pypi/pyversions/gnu-pass-to-csv)](https://pypi.org/project/gnu-pass-to-csv/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-8250df)](https://fbossiere.github.io/gnu-pass-to-csv/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ![Diagram showing an encrypted pass folder converted to a Proton Pass CSV without passphrase handling](https://raw.githubusercontent.com/fbossiere/gnu-pass-to-csv/main/docs/assets/github-social-preview.png)
@@ -39,6 +40,9 @@ Exported 42 entries to /home/alice/Downloads/proton-pass-import.csv
 
 In Proton Pass, choose **Settings → Import → Generic CSV**, import the file,
 verify a representative sample including TOTP entries, and remove the CSV.
+
+Follow the [complete getting-started guide](https://fbossiere.github.io/gnu-pass-to-csv/getting-started/)
+for safe destination selection, verification, and cleanup guidance.
 
 `pipx` is recommended because it keeps command-line applications isolated. A
 regular installation also works:
@@ -124,6 +128,8 @@ errors and process arguments; the tool never logs decrypted content.
 
 See [the detailed security model](docs/security.md), the
 [architecture](docs/architecture.md), and the [security policy](SECURITY.md).
+The complete documentation is available on
+[GitHub Pages](https://fbossiere.github.io/gnu-pass-to-csv/).
 
 ## Version 2 migration
 

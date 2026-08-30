@@ -18,6 +18,12 @@ uv sync --locked --extra dev
 uv run pre-commit install
 ```
 
+For documentation work, also install the documentation extra:
+
+```console
+uv sync --locked --extra dev --extra docs
+```
+
 The exact local quality gate is:
 
 ```console
@@ -26,6 +32,7 @@ uv run ruff format --check .
 uv run ruff check .
 uv run mypy
 uv run pytest
+uv run mkdocs build --strict
 uv build
 uv run twine check dist/*
 ```

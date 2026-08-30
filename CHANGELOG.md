@@ -5,6 +5,14 @@ All notable changes are documented here. The project follows
 
 ## [Unreleased]
 
+### Added
+
+- Version-controlled GitHub Pages documentation with getting-started, command,
+  entry-mapping, security, troubleshooting, architecture, development, and
+  release guides.
+- Strict documentation builds on pull requests and deployment from `main` with
+  GitHub Actions.
+
 ## [2.0.0] - 2026-08-30
 
 ### Added

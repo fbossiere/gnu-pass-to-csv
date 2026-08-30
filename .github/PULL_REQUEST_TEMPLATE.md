@@ -16,9 +16,9 @@ List exact commands run and observed results. Do not check work that was not run
 - [ ] `uv run ruff check .`
 - [ ] `uv run mypy`
 - [ ] `uv run pytest`
+- [ ] `uv run mkdocs build --strict` (when documentation dependencies are installed)
 - [ ] `uv build && uv run twine check dist/*`
 
 ## Non-goals
 
 State what this pull request intentionally does not change.
-

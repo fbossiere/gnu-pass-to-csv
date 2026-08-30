@@ -44,13 +44,16 @@ dev = [
   "ruff>=0.11,<1",
   "twine>=6.1,<7",
 ]
+docs = [
+  "mkdocs-material>=9.6,<10",
+]
 
 [project.scripts]
 gnu-pass-to-csv = "gnu_pass_to_csv.cli:main"
 
 [project.urls]
 Changelog = "https://github.com/fbossiere/gnu-pass-to-csv/blob/main/CHANGELOG.md"
-Documentation = "https://github.com/fbossiere/gnu-pass-to-csv#readme"
+Documentation = "https://fbossiere.github.io/gnu-pass-to-csv/"
 Issues = "https://github.com/fbossiere/gnu-pass-to-csv/issues"
 Repository = "https://github.com/fbossiere/gnu-pass-to-csv"
 Security = "https://github.com/fbossiere/gnu-pass-to-csv/security/policy"
@@ -58,7 +61,10 @@ Security = "https://github.com/fbossiere/gnu-pass-to-csv/security/policy"
 [tool.hatch.build.targets.sdist]
 include = [
   "/CHANGELOG.md",
+  "/CONTRIBUTING.md",
   "/LICENSE",
+  "/docs",
+  "/mkdocs.yml",
   "/README.md",
   "/SECURITY.md",
   "/src",
