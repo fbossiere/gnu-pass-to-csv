@@ -86,6 +86,9 @@ files = ["src", "tests"]
 [tool.pytest.ini_options]
 addopts = "--strict-config --strict-markers --cov=gnu_pass_to_csv --cov-report=term-missing --cov-fail-under=95"
 testpaths = ["tests"]
+markers = [
+  "integration: requires real pass and GnuPG executables",
+]
 
 [tool.coverage.run]
 branch = true
