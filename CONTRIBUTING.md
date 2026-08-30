@@ -32,6 +32,17 @@ uv run twine check dist/*
 
 CI must pass on every supported Python version before merge.
 
+The regular suite skips the real integration test when `pass`, `gpg`, or
+`gpgconf` is unavailable. CI installs those tools and requires an export from a
+temporary GPG key and password store to pass. Run that test locally with:
+
+```console
+uv run pytest --no-cov -m integration tests/test_integration_pass.py
+```
+
+CI also runs the full test suite, builds the wheel, installs it, and smoke-tests
+the command on macOS.
+
 ## Design invariants
 
 - Never accept or forward a GPG passphrase.
@@ -53,4 +64,3 @@ reproducible synthetic example or upstream format documentation.
 Keep changes focused and explain user-visible behavior, security-boundary impact,
 tests run, and explicit non-goals. Maintainers normally squash-merge after CI and
 all review conversations are resolved.
-

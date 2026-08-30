@@ -11,6 +11,7 @@ All notable changes are documented here. The project follows
 
 - Automated dependency updates, CI, CodeQL analysis, artifact validation,
   GitHub Releases, and PyPI trusted publishing.
+- Real `pass`/GPG integration coverage and macOS package smoke testing.
 - Proton Pass generic CSV field parsing for labeled URLs, email addresses,
   usernames, TOTP secrets, and notes.
 - Atomic, deterministic CSV output with `0600` permissions and overwrite

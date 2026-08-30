@@ -70,6 +70,65 @@ jobs:
       - name: Run tests
         run: uv run --python "${{ matrix.python-version }}" pytest
 
+  integration:
+    name: integration (pass + GPG)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+      - name: Install pass and GnuPG
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes pass gnupg
+      - name: Install development environment
+        run: uv sync --extra dev
+      - name: Verify integration tools
+        run: |
+          pass --version
+          gpg --version
+      - name: Run real pass and GPG integration test
+        run: uv run pytest --no-cov -m integration tests/test_integration_pass.py
+
+  macos-smoke:
+    name: macos smoke
+    runs-on: macos-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+      - name: Install development environment
+        run: uv sync --extra dev
+      - name: Run tests on macOS
+        run: uv run pytest
+      - name: Build and install wheel
+        run: |
+          uv build
+          uv venv --python 3.13 .smoke-venv
+          uv pip install --python .smoke-venv/bin/python dist/*.whl
+      - name: Smoke-test command
+        run: |
+          .smoke-venv/bin/gnu-pass-to-csv --version
+          .smoke-venv/bin/gnu-pass-to-csv --help
+
   package:
     name: package
     runs-on: ubuntu-latest
