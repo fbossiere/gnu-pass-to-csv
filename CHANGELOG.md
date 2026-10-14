@@ -5,6 +5,11 @@ All notable changes are documented here. The project follows
 
 ## [Unreleased]
 
+### Security
+
+- Updated locked development dependencies to urllib3 2.8.0 and virtualenv 21.7.13
+  to address their published security advisories. Runtime dependencies remain empty.
+
 ### Added
 
 - Version-controlled GitHub Pages documentation with getting-started, command,
