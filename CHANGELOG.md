@@ -7,8 +7,10 @@ All notable changes are documented here. The project follows
 
 ### Security
 
-- Updated locked development dependencies to urllib3 2.8.0 and virtualenv 21.7.13
-  to address their published security advisories. Runtime dependencies remain empty.
+- Updated locked development dependencies to urllib3 2.8.0, certifi 2026.10.23,
+  filelock 4.2.4 and virtualenv 21.14.13 to address their published security
+  advisories. Explicit development-only minimums prevent upgrades from retaining
+  vulnerable transitive versions; runtime dependencies remain empty.
 
 ### Added
 
